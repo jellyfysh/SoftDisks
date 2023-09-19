@@ -1,0 +1,8 @@
+CUDA/.idea/CUDA.iml
+CUDA/.idea/misc.xml
+CUDA/.idea/modules.xml
+CUDA/.idea/vcs.xml
+CUDA/.idea/workspace.xml
+*.o
+Soft_metropolis
+HS_metropolis

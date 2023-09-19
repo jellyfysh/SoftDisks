@@ -1,0 +1,96 @@
+#!/bin/bash
+#
+#   Copyright (c) 2023, Yoshihiko Nishikawa, Werner Krauth, and A. C. Maggs
+#
+#   Bash script for running the CUDA code
+#
+#   URL: https://github.com/jellyfysh/SoftDisks
+#   See LICENSE for copyright information
+#
+#   If you use this code or find it useful, please cite the following paper
+#
+#   @article{PhysRevE.108.024103,
+#       title = {Liquid-hexatic transition for soft disks},
+#       author = {Nishikawa, Yoshihiko and Krauth, Werner and Maggs, A. C.},
+#       journal = {Phys. Rev. E},
+#       volume = {108},
+#       issue = {2},
+#       pages = {024103},
+#       numpages = {7},
+#       year = {2023},
+#       month = {Aug},
+#       publisher = {American Physical Society},
+#       doi = {10.1103/PhysRevE.108.024103},
+#       url = {https://link.aps.org/doi/10.1103/PhysRevE.108.024103}
+#   }
+#
+#
+set -e       # exit on error
+umask 0002   # files can be modified by GPU user group
+. ../SetPath # set directory paths
+
+####################################################################################################################
+
+printf "\e[33m Run directory : %s \e[39m \n " $RUNDIR
+
+################################################ Important parameters ##############################################
+
+# This parameter controls the interaction potential;
+# IPL for the inverse power-law potential, WCA for the Weeks-Chandler-Andersen potential
+# and HS for the hard-sphere potential
+export Potential=IPL
+
+# This parameter controls the initial condition;
+# RANDOM starts a new run
+# RELOAD restarts a run, and
+# REPLICATE starts a run using a configuration of a two-times smaller system
+export INIT=RANDOM
+
+# This parameter controls the box shape;
+# SQUARE: The box shape will be square
+# NONSQUARE: The box will be a rectangle with ratio (Lx, Ly) = (1, \sqrt(3) / 2)
+export SHAPE=SQUARE
+
+export Density=to_be_set_below # Number density, controlled below
+export Beta=1.0                # Inverse temperature
+export rpotential=14           # The exponent for the power-law model, working only when Potential=IPL
+export cutoff=1.8              # The cutoff length, working only when Potential=IPL
+
+export Nrow=to_be_set_below # The total number of particles is Nrow^2, controlled below. Note that Nrow must be a power of 2 >= 64.
+export MaxMCS=10000         # This controls the number of Monte Carlo sweeps in a run. Note that the actual number is 160 times MaxMCS.
+
+####################################################################################################################
+
+if [ ${Potential} = "WCA" ]; then
+    rpotential=612          # The potential is 4(1/r^12 - 1/r^6) + 1
+    cutoff=1.12246204830937 # This is equal to 2^{1/6}
+elif [ ${Potential} = "HS" ]; then
+    rpotential=-1
+    cutoff=1.0
+elif [ ${Potential} = "IPL" -a $((${rpotential} % 612)) == 0 ]; then
+    echo "612 and its integer multiples for rpotential of IPL potential are not usable"
+    exit 1
+fi
+
+CURRENT=$(pwd)
+
+touch ${CURRENT}/list_runs.txt
+echo $(date) >>${CURRENT}/list_runs.txt
+
+####################################################################################################################
+
+list_Nrow=(
+    "64"
+)
+
+list_Density=(
+    "0.95"
+)
+
+for Nrow in "${list_Nrow[@]}"; do
+    for Density in "${list_Density[@]}"; do
+        echo "Potential=${Potential}, rpotential=${rpotential}, Nrow=${Nrow}, Density=${Density}, BETA=${BETA}, MaxMCS=${MaxMCS}, INIT=${INIT}, rpotential=${rpotential}, cutoff=${cutoff}, " >>${CURRENT}/list_runs.txt
+        ./RunAnalysis &
+        sleep 20
+    done
+done

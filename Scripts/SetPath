@@ -1,0 +1,8 @@
+export TOP=$(
+    cd ../../
+    pwd
+)
+export RUNDIR=${TOP}/Runs
+export SCRIPTS=${TOP}/Scripts/Nishikawa2023
+export HIGHFIVE=${TOP}/../HighFive
+export PYTHON=/usr/bin/python3

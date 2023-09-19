@@ -1,0 +1,45 @@
+#!/bin/bash
+#
+#   Copyright (c) 2023, Yoshihiko Nishikawa, Werner Krauth, and A. C. Maggs
+#
+#   Bash script for running the CUDA code
+#
+#   URL: https://github.com/jellyfysh/SoftDisks
+#   See LICENSE for copyright information
+#
+#   If you use this code or find it useful, please cite the following paper
+#
+#   @article{PhysRevE.108.024103,
+#       title = {Liquid-hexatic transition for soft disks},
+#       author = {Nishikawa, Yoshihiko and Krauth, Werner and Maggs, A. C.},
+#       journal = {Phys. Rev. E},
+#       volume = {108},
+#       issue = {2},
+#       pages = {024103},
+#       numpages = {7},
+#       year = {2023},
+#       month = {Aug},
+#       publisher = {American Physical Society},
+#       doi = {10.1103/PhysRevE.108.024103},
+#       url = {https://link.aps.org/doi/10.1103/PhysRevE.108.024103}
+#   }
+#
+#
+set -e
+. ../SetPath # set directory paths
+
+if [ ${SHAPE} = "NONSQUARE" ]; then
+    export SUFFIX=_NONSQUARE
+    export OPTION=--nonsquare
+fi
+
+export DIRPAR=dens_${Density}_beta_${Beta}_Nrow_${Nrow}_rpot_${rpotential}_cutoff_${cutoff}${SUFFIX}
+
+if [ ${Potential} != "IPL" ]; then
+    DIRPAR=dens_${Density}_beta_${Beta}_Nrow_${Nrow}_Potential_${Potential}${SUFFIX}
+fi
+
+export DIR=${RUNDIR}/${DIRPAR}
+
+${SCRIPTS}/Run.sh
+${SCRIPTS}/Analysis.sh

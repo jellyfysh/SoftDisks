@@ -1,0 +1,7 @@
+*.pdf
+*.png
+*h5
+*txt
+venv/
+testing/
+BernardKrauth/

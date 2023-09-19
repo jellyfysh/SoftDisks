@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+#   Copyright (c) 2023, Yoshihiko Nishikawa, Werner Krauth, and A. C. Maggs
+#
+#   Script for compiling the CUDA code without using the full scripts to run
+#
+#   URL: https://github.com/jellyfysh/SoftDisks
+#   See LICENSE for copyright information
+#
+#   If you use this code or find it useful, please cite the following paper:
+#
+#   @article{PhysRevE.108.024103,
+#       title = {Liquid-hexatic transition for soft disks},
+#       author = {Nishikawa, Yoshihiko and Krauth, Werner and Maggs, A. C.},
+#       journal = {Phys. Rev. E},
+#       volume = {108},
+#       issue = {2},
+#       pages = {024103},
+#       numpages = {7},
+#       year = {2023},
+#       month = {Aug},
+#       publisher = {American Physical Society},
+#       doi = {10.1103/PhysRevE.108.024103},
+#       url = {https://link.aps.org/doi/10.1103/PhysRevE.108.024103}
+#   }
+#
+#
+set -e
+make clean
+
+export Density=1.000
+export Beta=1
+
+export Nrow=64
+export MaxMCS=500000
+
+## Compiling hard sphere code
+export POTCUDA=HARDCUDA
+printf "\e[31m%s\e[39m\n" $POTCUDA
+export rpotential=-1
+export cutoff=1.0
+make -j 8 HS_metropolis
+
+make clean
+
+## Compiling soft sphere code
+POTCUDA=SOFTCUDA
+printf "\e[31m%s\e[39m\n" $POTCUDA
+rpotential=12
+cutoff=1.8
+make -j 8 Soft_metropolis
